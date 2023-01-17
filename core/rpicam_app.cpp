@@ -479,6 +479,15 @@ void RPiCamApp::ConfigureStill(unsigned int flags)
 	if (!configuration_)
 		throw std::runtime_error("failed to generate still capture configuration");
 
+	const std::string id = camera_->id();
+	if (id == "/base/soc/i2c0mux/i2c@1/arducam_64mp@1a") {
+		const libcamera::StreamFormats &formats = configuration_->at(1).formats();
+		for (const auto &pix : formats.pixelformats()) {
+			std::vector<Size> size_count = formats.sizes(pix);
+			configuration_->at(0).size = size_count.at(size_count.size() - 2);
+		}
+	}
+
 	// Now we get to override any of the default settings from the options_->
 	if (flags & FLAG_STILL_BGR)
 		configuration_->at(0).pixelFormat = libcamera::formats::BGR888;

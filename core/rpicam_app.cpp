@@ -956,6 +956,22 @@ StreamInfo RPiCamApp::GetStreamInfo(Stream const *stream) const
 	return info;
 }
 
+void RPiCamApp::SetScalerCrop(float roi_x, float roi_y, float roi_width, float roi_height) {
+	if (!controls_.get(controls::ScalerCrop))
+	{
+		Rectangle sensor_area = *camera_->properties().get(properties::ScalerCropMaximum);
+		int x = roi_x * sensor_area.width;
+		int y = roi_y * sensor_area.height;
+		int w = roi_width * sensor_area.width;
+		int h = roi_height * sensor_area.height;
+		Rectangle crop(x, y, w, h);
+		crop.translateBy(sensor_area.topLeft());
+		if (options_->verbose)
+			std::cout << "Using crop " << crop.toString() << std::endl;
+		controls_.set(controls::ScalerCrop, crop);
+	}
+}
+
 void RPiCamApp::setupCapture()
 {
 	// First finish setting up the configuration.

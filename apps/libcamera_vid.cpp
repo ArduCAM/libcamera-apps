@@ -14,6 +14,7 @@
 #include "core/libcamera_encoder.hpp"
 #include "encoder/encoder.hpp"
 #include "output/output.hpp"
+#include "../SignalServer/SignalServer.hpp"
 
 using namespace std::placeholders;
 
@@ -65,6 +66,14 @@ static int get_colourspace_flags(std::string const &codec)
 
 static void event_loop(LibcameraEncoder &app)
 {
+	SignalServer signal_server(8080);
+	std::string param;
+	signal_server.start();
+
+	float scale = 0.0;
+	float offset_x = 0.0;
+	float offset_y = 0.0;
+
 	VideoOptions const *options = app.GetOptions();
 	std::unique_ptr<Output> output = std::unique_ptr<Output>(Output::Create(options));
 	app.SetEncodeOutputReadyCallback(std::bind(&Output::OutputReady, output.get(), _1, _2, _3, _4));
@@ -84,6 +93,7 @@ static void event_loop(LibcameraEncoder &app)
 
 	for (unsigned int count = 0; ; count++)
 	{
+		param = signal_server.read();
 		LibcameraEncoder::Msg msg = app.Wait();
 		if (msg.type == LibcameraApp::MsgType::Timeout)
 		{
@@ -102,6 +112,83 @@ static void event_loop(LibcameraEncoder &app)
 			output->Signal();
 			app.GetEncoder()->Signal();
 		}
+		if (!key)
+			key = param[0];
+		switch (key)
+		{
+			case 'w':
+			case 'W':
+			{
+				scale += 0.05;
+				break;
+			}
+			case 's':
+			case 'S':
+			{
+				scale -= 0.05;
+				break;
+			}
+			case 'l':
+			case 'L':
+			{
+				offset_x += 0.05;
+				break;
+			}
+			case 'j':
+			case 'J':
+			{
+				offset_x -= 0.05;
+				break;
+			}
+			case 'i':
+			case 'I':
+			{
+				offset_y -= 0.05;
+				break;
+			}
+			case 'k':
+			case 'K':
+			{
+				offset_y += 0.05;
+				break;
+			}
+			case 'm':
+			case 'M':
+			{
+				scale = 0.95;
+				break;
+			}
+			case 'r':
+			case 'R':
+			{
+				scale = 0.0;
+				break;
+			}
+			default:
+				(void)0;
+		}
+		if (scale > 0.95)
+			scale = 0.95;
+		else if (scale < 0.0)
+			scale = 0.0;
+
+		if (offset_x > scale / 2)
+			offset_x = scale / 2;
+		else if (offset_x < -(scale / 2))
+			offset_x = -(scale / 2);
+
+		if (offset_y > scale / 2)
+			offset_y = scale / 2;
+		else if (offset_y < -(scale / 2))
+			offset_y = -(scale / 2);
+
+		if (isalpha(key))
+		{
+			std::cout << "scale: " << scale << ", offset_x: " << offset_x << std::endl;
+
+			app.SetScalerCrop(scale / 2 + offset_x, scale / 2 + offset_y, 1 - scale, 1 - scale);
+		}
+
 		LOG(2, "Viewfinder frame " << count);
 		auto now = std::chrono::high_resolution_clock::now();
 		bool timeout = !options->frames && options->timeout &&

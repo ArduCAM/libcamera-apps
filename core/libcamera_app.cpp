@@ -356,7 +356,9 @@ void LibcameraApp::ConfigureStill(unsigned int flags)
 	{
 		configuration_->at(1).size = options_->mode.Size();
 		configuration_->at(1).pixelFormat = mode_to_pixel_format(options_->mode);
-	}
+	} else if (!options_->rawfull)
+		configuration_->at(1).size = configuration_->at(0).size;
+
 	configuration_->at(1).bufferCount = configuration_->at(0).bufferCount;
 
 	configureDenoise(options_->denoise == "auto" ? "cdn_hq" : options_->denoise);

@@ -124,6 +124,7 @@ public:
 
 	void SetControls(const ControlList &controls);
 	StreamInfo GetStreamInfo(Stream const *stream) const;
+	void SetScalerCrop(float roi_x, float roi_y, float roi_width, float roi_height);
 
 	static unsigned int verbosity;
 	static unsigned int GetVerbosity() { return verbosity; }

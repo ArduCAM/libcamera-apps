@@ -9,7 +9,7 @@ add_executable(libcamera-vid libcamera_vid.cpp ../SignalServer/Semaphore.hpp ../
 target_link_libraries(libcamera-vid libcamera_app encoders outputs)
 
 project(libcamera-hello)
-add_executable(libcamera-hello libcamera_hello.cpp)
+add_executable(libcamera-hello libcamera_hello.cpp ../SignalServer/Semaphore.hpp ../SignalServer/SignalServer.cpp)
 target_link_libraries(libcamera-hello libcamera_app)
 
 project(libcamera-raw)
@@ -17,7 +17,7 @@ add_executable(libcamera-raw libcamera_raw.cpp)
 target_link_libraries(libcamera-raw libcamera_app encoders outputs)
 
 project(libcamera-jpeg)
-add_executable(libcamera-jpeg libcamera_jpeg.cpp)
+add_executable(libcamera-jpeg libcamera_jpeg.cpp ../SignalServer/Semaphore.hpp ../SignalServer/SignalServer.cpp)
 target_link_libraries(libcamera-jpeg libcamera_app images)
 
 set(EXECUTABLES libcamera-still libcamera-vid libcamera-hello libcamera-raw libcamera-jpeg)

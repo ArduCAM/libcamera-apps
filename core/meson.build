@@ -26,6 +26,7 @@ core_headers = files([
     'stream_info.hpp',
     'version.hpp',
     'video_options.hpp',
+    'hello_options.hpp',
 ])
 
 install_headers(core_headers, subdir: meson.project_name() / 'core')

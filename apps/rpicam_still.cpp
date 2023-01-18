@@ -216,6 +216,8 @@ static void event_loop(RPiCamStillApp &app)
 	int timelapse_frames = 0;
 	constexpr int TIMELAPSE_MIN_FRAMES = 6; // at least this many preview frames between captures
 	bool keypressed = false;
+	float lens_position = 0;
+	float af_step = 1;
 	enum
 	{
 		AF_WAIT_NONE,
@@ -259,6 +261,28 @@ static void event_loop(RPiCamStillApp &app)
 			case 'W':
 			{
 				scale += 0.05;
+				break;
+			}
+			case 'f':
+			case 'F': 
+			{
+				libcamera::ControlList cl;
+				cl.set(controls::AfMode, controls::AfModeAuto);
+				cl.set(controls::AfTrigger, controls::AfTriggerStart);
+				app.SetControls(cl);
+				std::cout << "AfTrigger" << std::endl;
+				break;
+			}
+			case 'd':
+			case 'D':
+			{
+				lens_position -= af_step;
+				break;
+			}
+			case 'a':
+			case 'A':
+			{
+				lens_position += af_step;
 				break;
 			}
 			case 's':
@@ -327,6 +351,18 @@ static void event_loop(RPiCamStillApp &app)
 			std::cout << "scale: " << scale << ", offset_x: " << offset_x << std::endl;
 
 			app.SetScalerCrop(scale / 2 + offset_x, scale / 2 + offset_y, 1 - scale, 1 - scale);
+		}
+
+		if (key == 'a' || key == 'A' || key == 'd' || key == 'D') {
+			if (options->afMode_index == controls::AfModeManual) {
+				libcamera::ControlList controls;
+				controls.set(controls::AfMode, controls::AfModeManual);
+				controls.set(controls::LensPosition, lens_position);
+				app.SetControls(controls);
+				std::cout << "target_lens_position: " << lens_position << std::endl;
+			} else {
+				std::cout << "Please switch the focus mode to manual focus mode." << std::endl;
+			}
 		}
 
 		// In viewfinder mode, run until the timeout or keypress. When that happens,

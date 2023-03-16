@@ -478,7 +478,7 @@ void RPiCamApp::ConfigureStill(unsigned int flags)
 		throw std::runtime_error("failed to generate still capture configuration");
 
 	const std::string id = camera_->id();
-	if (id == "/base/soc/i2c0mux/i2c@1/arducam_64mp@1a") {
+	if (id.find("arducam_64mp") != std::string::npos) {
 		const libcamera::StreamFormats &formats = configuration_->at(1).formats();
 		for (const auto &pix : formats.pixelformats()) {
 			std::vector<Size> size_count = formats.sizes(pix);
